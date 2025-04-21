@@ -2,6 +2,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, select
 from models.sticker import Sticker
+from models.user import User
 from schemas.sticker import StickerOut, StickerRegister
 from services.user_service import UserService
 
@@ -10,12 +11,21 @@ logger = logging.getLogger(__name__)
 
 class StickerService:
     @staticmethod
-    async def get_all_stickers(db: AsyncSession) -> list[StickerOut]:
-        stmt = select(Sticker)
-
+    async def get_all_stickers(db):
+        stmt = (
+            select(Sticker, User.user_name)
+            .join(User, Sticker.user_id == User.user_id)
+        )
         result = await db.execute(stmt)
-        stickers = result.scalars().all()
-        return [StickerOut.model_validate(s) for s in stickers]
+        rows = result.all()
+        
+        return [
+            StickerOut.model_validate({
+                **dict(sticker.__dict__),
+                "userName": user_name
+            }, from_attributes=False)
+            for sticker, user_name in rows
+        ]
 
 
     @staticmethod
@@ -70,8 +80,7 @@ class StickerService:
                 sticker_title=dto.sticker_title,
                 registed_date_time=dto.registed_date_time,
                 url=dto.url,
-                user_id=dto.user_id,
-                user_name=dto.user_name
+                user_id=dto.user_id,                
             )
 
             db.add(sticker)
