@@ -70,8 +70,8 @@ class StickerService:
             )
             if exists:
                 return False
-            
-            await UserService.register_user(db, dto.user_id, dto.user_name, skip_commit=True)
+                        
+            await UserService.update_user(db, dto.user_id, dto.user_name, dto.registed_date_time, skip_commit=True)
             
             # DTO -> ORM 모델 변환
             sticker = Sticker(

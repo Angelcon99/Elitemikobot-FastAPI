@@ -7,6 +7,8 @@ class User(Base):
 
     user_id = Column("UserId", Integer, primary_key=True)
     user_name = Column("UserName", String, nullable=False)
+    created_at = Column("CreatedAt", DateTime, nullable=True)
+    updated_at = Column("UpdatedAt", DateTime, nullable=True)
     register_count = Column("RegisterCount", Integer, default=0)
     is_blocked = Column("IsBlocked", Boolean, default=False)
     block_changed_at = Column("BlockChangedAt", DateTime)
