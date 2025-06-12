@@ -37,6 +37,14 @@ class UserService:
 
 
     @staticmethod
+    async def get_user(db: AsyncSession, user_id: int) -> User | None:
+        result = await db.execute(
+            select(User).where(User.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+
+    @staticmethod
     async def user_exists(db: AsyncSession, user_id: int) -> bool:
         stmt = select(User).where(
             User.user_id == user_id
