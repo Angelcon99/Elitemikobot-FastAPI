@@ -34,7 +34,7 @@ class StickerService:
     async def sticker_exists(db: AsyncSession, sticker_id: int, option_flag: int) -> bool:
         stmt = select(Sticker).where(
             Sticker.sticker_id == sticker_id,
-            Sticker.sticker_option_flag == option_flag & ~OptionFlag.OVERWRITE
+            Sticker.sticker_option_flag == option_flag
         )
 
         result = await db.execute(stmt)
@@ -56,7 +56,7 @@ class StickerService:
     async def get_sticker_url(db: AsyncSession, sticker_id: int, option_flag: int) -> str | None:
         stmt = select(Sticker.url).where(
             Sticker.sticker_id == sticker_id,
-            Sticker.sticker_option_flag == option_flag & ~OptionFlag.OVERWRITE
+            Sticker.sticker_option_flag == option_flag
         )
 
         result = await db.execute(stmt)
@@ -65,9 +65,10 @@ class StickerService:
 
     @staticmethod
     async def register_sticker(db: AsyncSession, dto: StickerRegister) -> bool:
-        try:                                    
+        try:                               
+            clean_flag = OptionFlag.strip_overwrite(dto.sticker_option_flag)     
             existing_sticker = await StickerService.get_sticker(
-                db, dto.sticker_id, dto.sticker_option_flag
+                db, dto.sticker_id, clean_flag
             )
 
             is_overwrite = OptionFlag.has_flag(dto.sticker_option_flag, OptionFlag.OVERWRITE)
@@ -88,13 +89,14 @@ class StickerService:
 
                     db.add(history)
                     await db.delete(existing_sticker)
-            
+                    await db.flush()
+                    
             await UserService.update_user(db, dto.user_id, dto.user_name, dto.registed_date_time, skip_commit=True)
             
             # DTO -> ORM 모델 변환
             sticker = Sticker(
                 sticker_id=dto.sticker_id,
-                sticker_option_flag=dto.sticker_option_flag & ~OptionFlag.OVERWRITE,   # OVERWRITE은 저장 x
+                sticker_option_flag=clean_flag,   # OVERWRITE 저장 x
                 sticker_title=dto.sticker_title,
                 registed_date_time=dto.registed_date_time,
                 url=dto.url,
@@ -117,7 +119,7 @@ class StickerService:
         result = await db.execute(
             select(Sticker).where(
                 Sticker.sticker_id == sticker_id,
-                Sticker.sticker_option_flag == option_flag & ~OptionFlag.OVERWRITE
+                Sticker.sticker_option_flag == option_flag
             )
         )
         return result.scalar_one_or_none()
@@ -128,7 +130,7 @@ class StickerService:
         try:
             stmt = delete(Sticker).where(
                 Sticker.sticker_id == sticker_id,
-                Sticker.sticker_option_flag == option_flag & ~OptionFlag.OVERWRITE
+                Sticker.sticker_option_flag == option_flag
             )
             result = await db.execute(stmt)
 

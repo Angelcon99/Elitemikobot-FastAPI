@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, Depends, Path, Query, Body, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
+from enums.option_flag import OptionFlag
 from schemas.sticker import StickerOut, StickerRegister
 from services.sticker_service import StickerService
 
@@ -15,6 +16,7 @@ async def get_all_stickers(
     db: AsyncSession = Depends(get_db)
 ):
     logger.info("GET /stickers - 전체 스티커 목록 요청")
+
     return await StickerService.get_all_stickers(db)
 
 
@@ -25,7 +27,9 @@ async def sticker_exists(
     db: AsyncSession = Depends(get_db)
 ):
     logger.info(f"GET /stickers/{id}/{flag} - 스티커 존재 여부 확인")
-    exists = await StickerService.sticker_exists(db, id, flag)
+
+    clean_flag = OptionFlag.strip_overwrite(flag)
+    exists = await StickerService.sticker_exists(db, id, clean_flag)
     return {"exists": exists}
 
 
@@ -35,7 +39,6 @@ async def check_url_exists(
     url: str = Query(..., description="중복 체크할 URL"),
     db: AsyncSession = Depends(get_db)
 ):
-    
     exists = await StickerService.url_exists(db, id, url)
     return {"exists": exists}
 
@@ -48,7 +51,8 @@ async def get_sticker_url(
 ):
     logger.info(f"GET /stickers/{id}/{flag}/url - 스티커 URL 요청")
 
-    url = await StickerService.get_sticker_url(db, id, flag)
+    clean_flag = OptionFlag.strip_overwrite(flag)
+    url = await StickerService.get_sticker_url(db, id, clean_flag)
     if url is None:
         logger.warning(f"스티커 URL 없음: id={id}, flag={flag}")
         raise HTTPException(status_code=404, detail="Sticker not found")
@@ -79,7 +83,8 @@ async def delete_sticker(
 ):
     logger.info(f"DELETE /stickers/{id}/{flag} - 스티커 삭제 요청")
 
-    deleted = await StickerService.delete_sticker(db, id, flag)
+    clean_flag = OptionFlag.strip_overwrite(flag)
+    deleted = await StickerService.delete_sticker(db, id, clean_flag)
     if not deleted:
         logger.warning(f"스티커 삭제 실패: id={id}, flag={flag}")
         raise HTTPException(status_code=404, detail="Sticker not found")

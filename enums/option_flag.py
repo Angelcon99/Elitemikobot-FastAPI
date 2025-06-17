@@ -1,10 +1,9 @@
 from __future__ import annotations
 from enum import IntFlag
 
-class OptionFlag(IntFlag):
-    EMP = 1             # 0000 0000 0000 0000 0000 0000 0000 0001
-    OVERWRITE = 2       # 0000 0000 0000 0000 0000 0000 0000 0010 덮어쓰기 - 저장x
-    MERGE = 4           # 0000 0000 0000 0000 0000 0000 0000 0100 디시콘 합치기
+class OptionFlag(IntFlag):    
+    OVERWRITE = 1       # 0000 0000 0000 0000 0000 0000 0000 0001 덮어쓰기 - 저장x
+    MERGE = 2           # 0000 0000 0000 0000 0000 0000 0000 0010 디시콘 합치기
 
     @staticmethod
     def has_flag(option: int | OptionFlag, flag: OptionFlag) -> bool:
@@ -13,3 +12,7 @@ class OptionFlag(IntFlag):
     @staticmethod
     def set_flag(option: int | OptionFlag, flag: OptionFlag) -> OptionFlag:
         return OptionFlag(option | flag)
+    
+    @staticmethod
+    def strip_overwrite(flag: int) -> int:
+        return flag & ~OptionFlag.OVERWRITE.value
