@@ -8,6 +8,7 @@ __pycache__/
 logs/
 .vscode/
 .idea/
+*.bat
 
 venv/
 .venv/

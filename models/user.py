@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import BigInteger, Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 
 class User(Base):
     __tablename__ = "Users"
 
-    user_id = Column("UserId", Integer, primary_key=True)
+    user_id = Column("UserId", BigInteger, primary_key=True, autoincrement=False)
     user_name = Column("UserName", String, nullable=False)
     created_at = Column("CreatedAt", DateTime, nullable=True)
     updated_at = Column("UpdatedAt", DateTime, nullable=True)
