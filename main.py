@@ -1,6 +1,6 @@
 # main.py
 from fastapi import FastAPI
-from api import sticker_router
+from api import sticker_router, user_router
 from core.logging import setup_logger
 
 setup_logger()
@@ -8,3 +8,4 @@ setup_logger()
 app = FastAPI()
 
 app.include_router(sticker_router.router, prefix="/api")
+app.include_router(user_router.router, prefix="/api")
